@@ -270,7 +270,7 @@ LRU::insertBlock(Addr addr, BlkType *blk, int master_id)
         blk->isTouched = true;
         if (!warmedUp && tagsInUse.value() >= warmupBound) {
             warmedUp = true;
-            printf("The cache has warmed up --------------- \n");
+            printf("The cache has completely warmed up --------------- \n");
             warmupCycle = curTick();
         }
     }
