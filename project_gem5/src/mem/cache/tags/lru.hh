@@ -69,15 +69,22 @@ class LRU : public BaseTags
     const unsigned assoc;
     /** The hit latency. */
     const unsigned hitLatency;
-
+    /** Victim cache addition */
     /** The cache sets. */
     CacheSet *sets;
+    CacheSet *victim_sets;
+    bool victim_addition;
 
     /** The cache blocks. */
     BlkType *blks;
     /** The data blocks, 1 per cache block. */
+    BlkType *temp;
+ 
     uint8_t *dataBlks;
-
+    uint8_t *victim_data_blks;
+    int num_victim_set;
+    int num_victim_size;
+   
     /** The amount to shift the address to get the set. */
     int setShift;
     /** The amount to shift the address to get the tag. */
@@ -148,7 +155,7 @@ public:
      * @param asid The address space ID.
      * @return Pointer to the cache block if found.
      */
-    BlkType* findBlock(Addr addr) const;
+    BlkType* findBlock(Addr addr) const; 
 
     /**
      * Find a block to evict for the address provided.
@@ -156,7 +163,7 @@ public:
      * @param writebacks List for any writebacks to be performed.
      * @return The candidate block.
      */
-    BlkType* findVictim(Addr addr, PacketList &writebacks);
+    BlkType* findVictim(Addr addr, PacketList &writebacks);//Modify this function for DIP / LIP 
 
     /**
      * Insert the new block into the cache.  For LRU this means inserting into
@@ -164,7 +171,7 @@ public:
      * @param addr The address to update.
      * @param blk The block to update.
      */
-     void insertBlock(Addr addr, BlkType *blk, int context_src);
+     void insertBlock(Addr addr, BlkType *blk, int context_src); // Modify this function for DIP / LIP 
 
     /**
      * Generate the tag from the given address.

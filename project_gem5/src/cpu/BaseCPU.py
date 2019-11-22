@@ -120,6 +120,7 @@ class BaseCPU(MemObject):
     elif buildEnv['TARGET_ISA'] == 'alpha':
         dtb = Param.AlphaTLB(AlphaDTB(), "Data TLB")
         itb = Param.AlphaTLB(AlphaITB(), "Instruction TLB")
+        print("DTB and ITB enabled")
         interrupts = Param.AlphaInterrupts(
                 NULL, "Interrupt Controller")
     elif buildEnv['TARGET_ISA'] == 'x86':
@@ -181,6 +182,7 @@ class BaseCPU(MemObject):
             self.interrupts = SparcInterrupts()
         elif buildEnv['TARGET_ISA'] == 'alpha':
             self.interrupts = AlphaInterrupts()
+	    print("Interrupt controller created")
         elif buildEnv['TARGET_ISA'] == 'x86':
             _localApic = X86LocalApic(pio_addr=0x2000000000000000)
             self.interrupts = _localApic

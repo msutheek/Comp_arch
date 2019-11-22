@@ -45,6 +45,7 @@ CacheSet::findBlk(Addr tag) const
 void
 CacheSet::moveToHead(CacheBlk *blk)
 {
+    //printf("in move to head \n");
     // nothing to do if blk is already head
     if (blks[0] == blk)
         return;
@@ -55,15 +56,18 @@ CacheSet::moveToHead(CacheBlk *blk)
     // start by setting up to write 'blk' into blks[0]
     int i = 0;
     CacheBlk *next = blk;
+    //printf("*blk = %x",*blk)
 
     do {
         assert(i < assoc);
+	//printf(" i is %d and assoc is %d",i,assoc);
         // swap blks[i] and next
         CacheBlk *tmp = blks[i];
         blks[i] = next;
         next = tmp;
         ++i;
     } while (next != blk);
+    //printf("in move to head done \n");
 }
 
 void

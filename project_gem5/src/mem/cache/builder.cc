@@ -77,7 +77,6 @@ using namespace std;
 #else
 #define BUILD_FALRU_CACHE BUILD_CACHE_PANIC("falru cache")
 #endif
-
 #if defined(USE_CACHE_LRU)
 #define BUILD_LRU_CACHE do {                                            \
         LRU *tags = new LRU(numSets, block_size, assoc, hit_latency);       \

@@ -42,8 +42,8 @@ def config_cache(options, system):
         else:
             system.l2 = L2Cache(size = options.l2_size, assoc = options.l2_assoc,
                                 block_size=options.cacheline_size)
-
-        system.tol2bus = CoherentBus()
+	
+	system.tol2bus = CoherentBus()
         system.l2.cpu_side = system.tol2bus.master
         system.l2.mem_side = system.membus.slave
 
