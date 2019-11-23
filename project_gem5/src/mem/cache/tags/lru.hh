@@ -70,16 +70,15 @@ class LRU : public BaseTags
     /** The hit latency. */
     const unsigned hitLatency;
     /** Victim cache addition */
+    bool victim_addition;
     /** The cache sets. */
     CacheSet *sets;
     CacheSet *victim_cache;
-    bool victim_addition;
 
     /** The cache blocks. */
     BlkType *blks;
     /** The data blocks, 1 per cache block. */
     BlkType *temp;
-    BlkType *tmp;
  
     uint8_t *dataBlks;
     uint8_t *victim_data_blks;
@@ -104,7 +103,7 @@ public:
      * @param _hit_latency The latency in cycles for a hit.
      */
     LRU(unsigned _numSets, unsigned _blkSize, unsigned _assoc,
-        unsigned _hit_latency);
+        unsigned _hit_latency, bool victim_addition);
 
     /**
      * Destructor

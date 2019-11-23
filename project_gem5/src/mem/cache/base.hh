@@ -252,7 +252,7 @@ class BaseCache : public MemObject
 
    /* Does this level of cache have a victim cache */
    
-    //bool victim_addition;
+    bool victim_addition;
 
     /**
      * Bit vector of the blocking reasons for the access path.

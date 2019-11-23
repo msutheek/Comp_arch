@@ -49,6 +49,7 @@ class BaseCache(MemObject):
     size = Param.MemorySize("capacity in bytes")
     forward_snoops = Param.Bool(True,
         "forward snoops from mem side to cpu side")
+    victim_addition=Param.Bool(False,"Does it have a victim Cache")
     is_top_level = Param.Bool(False, "Is this cache at the top level (e.g. L1)")
     subblock_size = Param.Int(0,
         "Size of subblock in IIC used for compression")

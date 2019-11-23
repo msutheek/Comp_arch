@@ -51,9 +51,9 @@ using namespace std;
       hitLatency(_hit_latency),victim_addition(_victim_addition)
 */
 LRU::LRU(unsigned _numSets, unsigned _blkSize, unsigned _assoc,
-         unsigned _hit_latency)
+         unsigned _hit_latency,bool _victim_addition)
     : numSets(_numSets), blkSize(_blkSize), assoc(_assoc),
-      hitLatency(_hit_latency)
+      hitLatency(_hit_latency),victim_addition(_victim_addition)
 {
     // Check parameters
     if (blkSize < 4 || !isPowerOf2(blkSize)) {
@@ -76,18 +76,17 @@ LRU::LRU(unsigned _numSets, unsigned _blkSize, unsigned _assoc,
     warmedUp = false;
     /** @todo Make warmup percentage a parameter. */
     warmupBound = numSets * assoc;
-    victim_addition =true;
-	int no_victim;
-   if(victim_addition==1)
+    int num_victim_sets;
+   if(victim_addition==true)
    {
-	    no_victim = 8;
-		victim_cache = new CacheSet[1];
+	num_victim_sets = 8;
+	victim_cache = new CacheSet[1];
     }
     sets = new CacheSet[numSets];
-    blks = new BlkType[(numSets * assoc) + no_victim];
+    blks = new BlkType[(numSets * assoc) + num_victim_sets];
 
     // allocate data storage in one big chunk
-    numBlocks = (numSets * assoc)+no_victim;
+    numBlocks = (numSets * assoc)+num_victim_sets;
     dataBlks = new uint8_t[numBlocks * blkSize];
 
     unsigned blkIndex = 0;       // index into blks array
@@ -118,11 +117,11 @@ LRU::LRU(unsigned _numSets, unsigned _blkSize, unsigned _assoc,
             blk->set = i;
         }
     }
-    if(victim_addition == 1)
+    if(victim_addition == true)
     {
-	    victim_cache[0].assoc = no_victim;
-	    victim_cache[0].blks = new BlkType*[no_victim];
-	    for (unsigned j = 0; j < no_victim; ++j) {
+	    victim_cache[0].assoc = num_victim_sets;
+	    victim_cache[0].blks = new BlkType*[num_victim_sets];
+	    for (unsigned j = 0; j < num_victim_sets; ++j) {
 		    // locate next cache block
 		    BlkType *blk = &blks[blkIndex];
 		    blk->data = &dataBlks[blkSize*blkIndex];
@@ -150,27 +149,25 @@ LRU::~LRU()
 LRU::BlkType*
 LRU::accessBlock(Addr addr, int &lat, int master_id)
 {    
-	int no_victim=8;	
-	bool check = false;
+	int num_victim_sets=8;	
 	///printf("in access blk \n");
     Addr tag = extractTag(addr);
     unsigned set = extractSet(addr);
     BlkType *blk = sets[set].findBlk(tag);
     lat = hitLatency;
-	if((blk == NULL) && (victim_addition == 1)){
+	if((blk == NULL) && (victim_addition == true)){
 	printf("Checking in victim cache\n");
-	for (int i = 0; i < no_victim; ++i) {
-		if ((victim_cache[0].blks[i]->tag == tag) && (victim_cache[0].blks[i]->set == set) && (((victim_cache[0].blks[i]->status) & 0x01) !=0)){
-		check = true;
+    lat=hitLatency+1;
+	for (int i = 0; i < num_victim_sets; ++i) {
+		if ((victim_cache[0].blks[i]->tag == tag) && (victim_cache[0].blks[i]->set == set) && (((victim_cache[0].blks[i]->isValid()==1)))){
 		printf("Found in victim cache \n");
 		blk = victim_cache[0].blks[i];
 		victim_cache[0].blks[i] = sets[set].blks[assoc-1];
-		printf("associativity of victim cache is %d \n",victim_cache[0].assoc);
+		//printf("associativity of victim cache is %d \n",victim_cache[0].assoc);
 		victim_cache[0].moveToHead(victim_cache[0].blks[i]);
 		sets[set].blks[assoc-1] = blk;
 		//blk = sets[set].blks[assoc-1];
 		}
-		if(check) break;
 	}
 
     if (blk != NULL) {
@@ -195,40 +192,25 @@ LRU::accessBlock(Addr addr, int &lat, int master_id)
 LRU::BlkType*
 LRU::findBlock(Addr addr) const
 {
-    int no_victim=8;
-	bool check=false;
 	Addr tag = extractTag(addr);
     unsigned set = extractSet(addr);
     BlkType *blk = sets[set].findBlk(tag);
-	if((blk == NULL) && (victim_addition == 1)){
-	for (int i = 0; i < no_victim; ++i) {
-		if ((victim_cache[0].blks[i]->tag == tag) && (victim_cache[0].blks[i]->set == set) && (((victim_cache[0].blks[i]->status) & 0x01) !=0)){
-		check = true;
-		//printf("Found in victim cache \n");
-		blk = victim_cache[0].blks[i];
-		//blk = sets[set].blks[assoc-1];
-		}
-		if(check) break;
-	}
-}
     return blk;
 }
 
 LRU::BlkType*
 LRU::findVictim(Addr addr, PacketList &writebacks)
 {
-	int no_victim=8;
+	int num_victim_sets=8;
     unsigned set = extractSet(addr);
     // grab a replacement candidate
      BlkType *blk = sets[set].blks[assoc-1];
-	if(victim_addition == 1){
-	BlkType *tmp = victim_cache[0].blks[no_victim-1];
-	victim_cache[0].blks[no_victim-1] = blk;
-	victim_cache[0].blks[no_victim-1]->tag = blk->tag;
-	victim_cache[0].blks[no_victim-1]->set = set;
+	if((victim_addition == true)&&(blk->isValid())){
+	BlkType *temp = victim_cache[0].blks[num_victim_sets-1];
+	victim_cache[0].blks[num_victim_sets-1] = blk;
 	victim_cache[0].moveToHead(blk);
-	sets[set].blks[assoc-1] = tmp;
-	blk=tmp;
+	sets[set].blks[assoc-1] = temp;
+	blk=temp;
 	}
      
 

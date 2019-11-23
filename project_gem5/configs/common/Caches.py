@@ -36,7 +36,8 @@ class L1Cache(BaseCache):
     response_latency = '1ns'
     mshrs = 10
     tgts_per_mshr = 20
-    is_top_level = True 
+    is_top_level = True
+    victim_addition=False 
 
 class L2Cache(BaseCache):
     size='1MB'
@@ -46,6 +47,7 @@ class L2Cache(BaseCache):
     response_latency = '10ns'
     mshrs = 20
     tgts_per_mshr = 12
+    victim_addition=False 
 
 class PageTableWalkerCache(BaseCache):
     assoc = 2
@@ -56,6 +58,7 @@ class PageTableWalkerCache(BaseCache):
     size = '1kB'
     tgts_per_mshr = 12
     is_top_level = True
+    victim_addition=False 
 
 class IOCache(BaseCache):
     assoc = 8
@@ -67,5 +70,6 @@ class IOCache(BaseCache):
     tgts_per_mshr = 12
     forward_snoops = False
     is_top_level = True
+    victim_addition=False 
 
 

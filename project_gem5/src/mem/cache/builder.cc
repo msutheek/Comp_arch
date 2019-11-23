@@ -79,7 +79,7 @@ using namespace std;
 #endif
 #if defined(USE_CACHE_LRU)
 #define BUILD_LRU_CACHE do {                                            \
-        LRU *tags = new LRU(numSets, block_size, assoc, hit_latency);       \
+        LRU *tags = new LRU(numSets, block_size, assoc, hit_latency,victim_addition);       \
         BUILD_CACHE(LRU, tags);                                         \
     } while (0)
 #else
