@@ -59,6 +59,7 @@ CacheSet::moveToHead(CacheBlk *blk)
     //printf("*blk = %x",*blk)
 
     do {
+	printf("i is %d and assoc is %d \n",i,assoc );
         assert(i < assoc);
 	//printf(" i is %d and assoc is %d",i,assoc);
         // swap blks[i] and next

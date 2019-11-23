@@ -77,56 +77,20 @@ LRU::LRU(unsigned _numSets, unsigned _blkSize, unsigned _assoc,
     /** @todo Make warmup percentage a parameter. */
     warmupBound = numSets * assoc;
     victim_addition =true;
-    //printf(" in here in here in here \n");
-	unsigned blkIndex = 0;       // index into blks array
-/////////// Modifications for victim cache //////////////////////////
-	if(victim_addition)
-	{
-		num_victim_set=1;
-		num_victim_size=8;
-	printf("creating victim cache \n");
-        victim_sets= new CacheSet[num_victim_set];
-        blks = new BlkType[num_victim_size];
-        victim_data_blks = new uint8_t[num_victim_set*num_victim_size*blkSize];
-
-    for (unsigned i = 0; i < num_victim_set; ++i) {
-        victim_sets[i].assoc = num_victim_size;
-
-        victim_sets[i].blks = new BlkType*[num_victim_size];
-
-        // link in the data blocks
-        for (unsigned j = 0; j < num_victim_size; ++j) {
-            // locate next cache block
-            BlkType *blk = &blks[blkIndex];
-            blk->data = &victim_data_blks[blkSize*blkIndex];
-            ++blkIndex;
-
-            // invalidate new cache block
-            blk->invalidate();
-
-            //EGH Fix Me : do we need to initialize blk?
-
-            // Setting the tag to j is just to prevent long chains in the hash
-            // table; won't matter because the block is invalid
-            blk->tag = j;
-            blk->whenReady = 0;
-            blk->isTouched = false;
-            blk->size = blkSize;
-            victim_sets[0].blks[j]=blk;
-            blk->set = i;
-        }
+	int no_victim;
+   if(victim_addition==1)
+   {
+	    no_victim = 8;
+		victim_cache = new CacheSet[1];
     }
-
-}
-///////////////////////////////////////////////////////////////
-	
     sets = new CacheSet[numSets];
-    blks = new BlkType[numSets * assoc];
+    blks = new BlkType[(numSets * assoc) + no_victim];
+
     // allocate data storage in one big chunk
-    numBlocks = numSets * assoc;
+    numBlocks = (numSets * assoc)+no_victim;
     dataBlks = new uint8_t[numBlocks * blkSize];
 
-    blkIndex = 0;       // index into blks array
+    unsigned blkIndex = 0;       // index into blks array
     for (unsigned i = 0; i < numSets; ++i) {
         sets[i].assoc = assoc;
 
@@ -154,6 +118,26 @@ LRU::LRU(unsigned _numSets, unsigned _blkSize, unsigned _assoc,
             blk->set = i;
         }
     }
+    if(victim_addition == 1)
+    {
+	    victim_cache[0].assoc = no_victim;
+	    victim_cache[0].blks = new BlkType*[no_victim];
+	    for (unsigned j = 0; j < no_victim; ++j) {
+		    // locate next cache block
+		    BlkType *blk = &blks[blkIndex];
+		    blk->data = &dataBlks[blkSize*blkIndex];
+		    ++blkIndex;
+		    // invalidate new cache block
+		    blk->invalidate();
+		    blk->tag = j;
+		    blk->whenReady = 0;
+		    blk->isTouched = false;
+		    blk->size = blkSize;
+		    victim_cache[0].blks[j]=blk;
+		    blk->set = 0;
+	    }
+     }
+
 }
 
 LRU::~LRU()
@@ -165,16 +149,35 @@ LRU::~LRU()
 
 LRU::BlkType*
 LRU::accessBlock(Addr addr, int &lat, int master_id)
-{
-    printf("in access blk \n");
+{    
+	int no_victim=8;	
+	bool check = false;
+	///printf("in access blk \n");
     Addr tag = extractTag(addr);
     unsigned set = extractSet(addr);
     BlkType *blk = sets[set].findBlk(tag);
     lat = hitLatency;
+	if((blk == NULL) && (victim_addition == 1)){
+	printf("Checking in victim cache\n");
+	for (int i = 0; i < no_victim; ++i) {
+		if ((victim_cache[0].blks[i]->tag == tag) && (victim_cache[0].blks[i]->set == set) && (((victim_cache[0].blks[i]->status) & 0x01) !=0)){
+		check = true;
+		printf("Found in victim cache \n");
+		blk = victim_cache[0].blks[i];
+		victim_cache[0].blks[i] = sets[set].blks[assoc-1];
+		printf("associativity of victim cache is %d \n",victim_cache[0].assoc);
+		victim_cache[0].moveToHead(victim_cache[0].blks[i]);
+		sets[set].blks[assoc-1] = blk;
+		//blk = sets[set].blks[assoc-1];
+		}
+		if(check) break;
+	}
+
     if (blk != NULL) {
         // move this block to head of the MRU list
         //printf("move to head 1 \n");
-        sets[set].moveToHead(blk);
+        //if(assoc!=1){
+		sets[set].moveToHead(blk);//}
         DPRINTF(CacheRepl, "set %x: moving blk %x to MRU\n",
                 set, regenerateBlkAddr(tag, set));
         if (blk->whenReady > curTick()
@@ -183,44 +186,8 @@ LRU::accessBlock(Addr addr, int &lat, int master_id)
         }
         blk->refCount += 1;
     }
-   if((blk== NULL) &&(victim_addition==1))
-   {
-		//printf("blk == NULL ");
-    		printf("blk not found searching in victim \n");
-		for (int i = 0; i < 8; ++i)
-		{
-			if ((victim_sets[0].blks[i]->tag == addr) && (((victim_sets[0].blks[i]->status) & 0x01) !=0))
-			{
-				printf("Found in victim cache \n");
-				temp = new BlkType[1];
-				printf("1 \n");
-				temp = victim_sets[0].blks[i];
-				printf("2 \n");
-				victim_sets[0].blks[i] = sets[set].blks[assoc-1];
-				printf("3 \n");
-			 	sets[set].blks[assoc-1]=temp;
-				printf("4 \n");
-				BlkType *blk2 = sets[set].blks[assoc-1];
-				printf("5 \n");
-				blk2->tag=extractTag(addr);
-				printf("6 \n");
-				//printf("Attempting to move victim block to head \n");	
-        			//printf("move to head 2 \n");
-			 	blk=victim_sets[0].blks[i];
-				printf("7 \n");
-				victim_sets[0].moveToHead(blk);
-				printf("8 \n");
-				//printf(" move victim block to head done \n");	
-				blk=sets[set].blks[assoc-1];
-				printf("9 \n");
-        			//printf("move to head 3 \n");
-				sets[set].moveToHead(blk);
-				printf("10 \n");
-			}
-		}
-        //lat = hitLatency+1;
-   }
-printf("check if completing \n");
+}
+
     return blk;
 }
 
@@ -228,38 +195,47 @@ printf("check if completing \n");
 LRU::BlkType*
 LRU::findBlock(Addr addr) const
 {
-    Addr tag = extractTag(addr);
+    int no_victim=8;
+	bool check=false;
+	Addr tag = extractTag(addr);
     unsigned set = extractSet(addr);
     BlkType *blk = sets[set].findBlk(tag);
+	if((blk == NULL) && (victim_addition == 1)){
+	for (int i = 0; i < no_victim; ++i) {
+		if ((victim_cache[0].blks[i]->tag == tag) && (victim_cache[0].blks[i]->set == set) && (((victim_cache[0].blks[i]->status) & 0x01) !=0)){
+		check = true;
+		//printf("Found in victim cache \n");
+		blk = victim_cache[0].blks[i];
+		//blk = sets[set].blks[assoc-1];
+		}
+		if(check) break;
+	}
+}
     return blk;
 }
 
 LRU::BlkType*
 LRU::findVictim(Addr addr, PacketList &writebacks)
 {
+	int no_victim=8;
     unsigned set = extractSet(addr);
     // grab a replacement candidate
-    BlkType *blk2 = sets[set].blks[assoc-1];
-	if ((blk2->isValid())&&(victim_addition==1)) 
-	{
-    		printf("find victim \n");
-    		//printf(" blk -> data in actual cache = %d \n",*(blk2->data));
-		//BlkType *blk5 = victim_sets[0].blks[7];
-		temp = new BlkType[1];
-		temp = victim_sets[0].blks[7];
-		//printf(" blk -> data in victim cache initially = %d \n",*(blk5->data));
-		victim_sets[0].blks[7] = sets[set].blks[assoc-1];
-		BlkType *blk3 = victim_sets[0].blks[7];
-		blk3->tag=regenerateBlkAddr(blk2->tag,set);
-		printf(" intial address = %lu blk tag is = %lu \n",addr,blk3->tag);
-		//blk3->tag=addr;
-		//printf("in move to head 4 \n");	
-		//printf("assoc of victim cache = %d ",victim_sets[0].assoc);
-		victim_sets[0].moveToHead(blk3);
-        }
-    //BlkType *blk4 = sets[set].blks[assoc-1];
-    //printf(" Data to be evicted in cache same guy as before  = %d \n",*(blk4->data));
-    return blk2;
+     BlkType *blk = sets[set].blks[assoc-1];
+	if(victim_addition == 1){
+	BlkType *tmp = victim_cache[0].blks[no_victim-1];
+	victim_cache[0].blks[no_victim-1] = blk;
+	victim_cache[0].blks[no_victim-1]->tag = blk->tag;
+	victim_cache[0].blks[no_victim-1]->set = set;
+	victim_cache[0].moveToHead(blk);
+	sets[set].blks[assoc-1] = tmp;
+	blk=tmp;
+	}
+     
+
+if (blk->isValid()) { 
+	DPRINTF(CacheRepl, "set %x: selecting blk %x for replacement\n", set, regenerateBlkAddr(blk->tag, set));
+	}
+    return blk;
 }
 
 void
@@ -295,7 +271,7 @@ LRU::insertBlock(Addr addr, BlkType *blk, int master_id)
     blk->isTouched = true;
     // Set tag for new block.  Caller is responsible for setting status.
     blk->tag = extractTag(addr);
-
+	blk->set = extractSet(addr);
     // deal with what we are bringing in
     assert(master_id < cache->system->maxMasters());
     occupancies[master_id]++;
@@ -303,7 +279,8 @@ LRU::insertBlock(Addr addr, BlkType *blk, int master_id)
 
     unsigned set = extractSet(addr);
     //printf("in move to head 5 \n");
-    sets[set].moveToHead(blk); // Change this line for Insertion policy
+      //if(assoc!=1){
+	sets[set].moveToHead(blk);//} // Change this line for Insertion policy
 }
 
 void

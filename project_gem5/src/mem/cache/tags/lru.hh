@@ -72,13 +72,14 @@ class LRU : public BaseTags
     /** Victim cache addition */
     /** The cache sets. */
     CacheSet *sets;
-    CacheSet *victim_sets;
+    CacheSet *victim_cache;
     bool victim_addition;
 
     /** The cache blocks. */
     BlkType *blks;
     /** The data blocks, 1 per cache block. */
     BlkType *temp;
+    BlkType *tmp;
  
     uint8_t *dataBlks;
     uint8_t *victim_data_blks;
