@@ -1043,7 +1043,7 @@ Cache<TagStore>::allocateBlock(Addr addr, PacketList &writebacks)
     BlkType *blk = tags->findVictim(addr, writebacks);
 
     if (blk->isValid()) {
-        Addr repl_addr = tags->regenerateBlkAddr(blk->tag, blk->set);
+        Addr repl_addr = blk->tag;//tags->regenerateBlkAddr(blk->tag, blk->set);
         MSHR *repl_mshr = mshrQueue.findMatch(repl_addr);
         if (repl_mshr) {
             // must be an outstanding upgrade request on block
