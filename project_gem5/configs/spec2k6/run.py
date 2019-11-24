@@ -153,7 +153,7 @@ multiprocesses.append(process)
 
 np = options.num_cpus
 system = System(cpu = [CPUClass(cpu_id=i) for i in xrange(np)],
-                physmem = SimpleMemory(range=AddrRange("512MB")),
+                physmem = SimpleMemory(range=AddrRange("8192MB")),
                 membus = CoherentBus(), mem_mode = test_mem_mode)
 
 for i in xrange(np):
@@ -163,10 +163,14 @@ for i in xrange(np):
         system.cpu[i].workload = multiprocesses[0]
     else:
         system.cpu[i].workload = multiprocesses[i]
+if options.ruby:
+    if not (options.cpu_type == "detailed" or options.cpu_type == "timing"):
+        print >> sys.stderr, "Ruby requires TimingSimpleCPU or O3CPU!!"
+ 	sys.exit(1)
+    options.use_map = True
+    Ruby.create_system(options, system)
+    assert(options.num_cpus == len(system.ruby._cpu_ruby_ports))
 
-options.use_map = True
-Ruby.create_system(options, system)
-assert(options.num_cpus == len(system.ruby._cpu_ruby_ports))
 
 for i in xrange(np):
     ruby_port = system.ruby._cpu_ruby_ports[i]
@@ -183,7 +187,11 @@ for i in xrange(np):
 
         system.cpu[i].itb.walker.port = ruby_port.slave
         system.cpu[i].dtb.walker.port = ruby_port.slave
-
+else:
+    system.system_port = system.membus.slave
+    print("This is being called")
+    system.physmem.port = system.membus.master
+    CacheConfig.config_cache(options, system)
 
 root = Root(full_system = False, system = system)
 Simulation.run(options, root, system, FutureClass)

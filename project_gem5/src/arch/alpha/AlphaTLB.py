@@ -37,7 +37,7 @@ class AlphaTLB(BaseTLB):
     size = Param.Int("TLB size")
 
 class AlphaDTB(AlphaTLB):
-    size = 64
+    size = 256
 
 class AlphaITB(AlphaTLB):
-    size = 48
+    size = 256
