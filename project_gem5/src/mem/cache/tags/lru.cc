@@ -156,7 +156,7 @@ LRU::accessBlock(Addr addr, int &lat, int master_id)
     BlkType *blk = sets[set].findBlk(tag);
     lat = hitLatency;
 	if((blk == NULL) && (victim_addition == true)){
-	printf("Checking in victim cache\n");
+	//printf("Checking in victim cache\n");
     lat=hitLatency+1;
 	for (int i = 0; i < num_victim_sets; ++i) {
 		if ((victim_cache[0].blks[i]->tag == tag) && (victim_cache[0].blks[i]->set == set) && (((victim_cache[0].blks[i]->isValid()==1)))){
