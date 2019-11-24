@@ -54,7 +54,7 @@ output_dir= '/home/min/a/username/outputs/spec2k6/'
 perlbench = LiveProcess()
 perlbench_dir = '400.perlbench/'
 perlbench.executable =  bench_dir+perlbench_dir+'/exe/perlbench'
-perlbench.cmd = [perlbench.executable] + ['-I./lib', 'attrs.pl']
+perlbench.cmd = [perlbench.executable] + ['-I./lib', bench_dir+'/400.perlbench/data/test/input/attrs.pl']
 perlbench.output = 'attrs.out'
 
 #401.bzip2
@@ -75,7 +75,7 @@ gcc.cmd = [gcc.executable] + [data]+['-o',output] + ['-quiet'] + ['-funroll-loop
 
 #410.bwaves
 bwaves = LiveProcess()
-bwaves.executable =  bench_dir+'/exe/bwaves'
+bwaves.executable =  bench_dir+'410.bwaves/exe/bwaves'
 #bwaves.data = bwaves.data
 bwaves.cmd = [bwaves.executable]
 
@@ -84,7 +84,7 @@ gamess=LiveProcess()
 gamess_dir='416.gamess/'
 gamess.executable =  bench_dir+gamess_dir+'/exe/gamess'
 gamess.cmd = [gamess.executable]
-gamess.input='exam29.config'
+gamess.input=bench_dir+gamess_dir+'/data/test/input/exam29.config'
 gamess.output='exam29.output'
 
 #429.mcf
@@ -114,7 +114,7 @@ zeusmp.output = 'zeusmp.stdout'
 #435.gromacs
 gromacs = LiveProcess()
 gromacs_dir='435.gromacs/'
-gromacs.executable = bench_dir+gromacs_dir+gromacs_dir+'/exe/gromacs'
+gromacs.executable = bench_dir+gromacs_dir+'/exe/gromacs'
 data=bench_dir+gromacs_dir+'/data/ref/input/gromacs.tpr'
 gromacs.cmd = [gromacs.executable] + ['-silent','-deffnm',data,'-nice','0']
 
@@ -185,8 +185,8 @@ calculix.output = 'beampic.log'
 
 #456.hmmer
 hmmer=LiveProcess()
-hmmr_dir = '456.hmmr/'
-hmmer.executable = bench_dir+hmmr_dir+'/exe/hmmer'
+hmmr_dir = '456.hmmer/'
+hmmer.executable = bench_dir+hmmr_dir+'exe/hmmer'
 data=bench_dir+hmmr_dir+'/data/ref/input/nph3.hmm'
 hmmer.cmd = [hmmer.executable]+['--fixed', '0', '--mean', '325', '--num', '5000', '--sd', '200', '--seed', '0', data]
 hmmer.output = 'bombesin.out'
@@ -216,7 +216,7 @@ libquantum.output = 'ref.out'
 #464.h264ref
 h264ref=LiveProcess()
 h264_dir = '464.h264ref/'
-h264ref.executable = bench_dir+h264_dir+'/exe/h264'
+h264ref.executable = bench_dir+h264_dir+'/exe/h264ref'
 data=bench_dir+h264_dir+'/data/ref/input/foreman_ref_encoder_baseline.cfg'
 h264ref.cmd = [h264ref.executable]+['-d',data]
 h264ref.output = 'foreman_ref_encoder_baseline.out'

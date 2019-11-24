@@ -172,21 +172,20 @@ if options.ruby:
     assert(options.num_cpus == len(system.ruby._cpu_ruby_ports))
 
 
-for i in xrange(np):
-    ruby_port = system.ruby._cpu_ruby_ports[i]
-
-    # Create the interrupt controller and connect its ports to Ruby
-    system.cpu[i].createInterruptController()
-    # Connect the cpu's cache ports to Ruby
-    system.cpu[i].icache_port = ruby_port.slave
-    system.cpu[i].dcache_port = ruby_port.slave
-    if buildEnv['TARGET_ISA'] == 'x86':
-        system.cpu[i].interrupts.pio = ruby_port.master
-        system.cpu[i].interrupts.int_master = ruby_port.slave
-        system.cpu[i].interrupts.int_slave = ruby_port.master
-
-        system.cpu[i].itb.walker.port = ruby_port.slave
-        system.cpu[i].dtb.walker.port = ruby_port.slave
+    for i in xrange(np):
+        ruby_port = system.ruby._cpu_ruby_ports[i]
+        # Create the interrupt controller and connect its ports to Ruby
+        system.cpu[i].createInterruptController()
+        # Connect the cpu's cache ports to Ruby
+        system.cpu[i].icache_port = ruby_port.slave
+        system.cpu[i].dcache_port = ruby_port.slave
+        if buildEnv['TARGET_ISA'] == 'x86':
+            system.cpu[i].interrupts.pio = ruby_port.master
+            system.cpu[i].interrupts.int_master = ruby_port.slave
+            system.cpu[i].interrupts.int_slave = ruby_port.master
+    
+            system.cpu[i].itb.walker.port = ruby_port.slave
+            system.cpu[i].dtb.walker.port = ruby_port.slave
 else:
     system.system_port = system.membus.slave
     print("This is being called")
