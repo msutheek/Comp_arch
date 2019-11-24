@@ -200,7 +200,8 @@ LRU::insertBlock(Addr addr, BlkType *blk, int master_id)
     blk->srcMasterId = master_id;
 
     unsigned set = extractSet(addr);
-    sets[set].moveToHead(blk);
+    //sets[set].moveToHead(blk);
+    sets[set].blks[assoc-1]=blk;
 }
 
 void
