@@ -53,8 +53,8 @@ output_dir= '/home/min/a/username/outputs/spec2k6/'
 #400.perlbench
 perlbench = LiveProcess()
 perlbench_dir = '400.perlbench/'
-perlbench.executable =  bench_dir+perlbench_dir+'/exe/perlbench'
-perlbench.cmd = [perlbench.executable] + ['-I./lib', bench_dir+'/400.perlbench/data/test/input/attrs.pl']
+perlbench.executable = '/home/min/a/mohan40/project_gem5/perlbench'
+perlbench.cmd = [perlbench.executable] + ['-I ../data/all/input/lib','attrs.pl']
 perlbench.output = 'attrs.out'
 
 #401.bzip2
@@ -163,7 +163,7 @@ dealII.output='log'
 soplex=LiveProcess()
 soplex_dir = '450.soplex/'
 soplex.executable = bench_dir+soplex_dir+'/exe/soplex'
-data=bench_dir+soplex_dir+'/data/ref/input/ref.mps'
+data='/home/min/a/mohan40/project_gem5/ref.mps'
 soplex.cmd = [soplex.executable]+['-m10000',data]
 soplex.output = 'test.out'
 
