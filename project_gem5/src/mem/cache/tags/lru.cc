@@ -169,6 +169,7 @@ LRU::insertBlock(Addr addr, BlkType *blk, int master_id)
         blk->isTouched = true;
         if (!warmedUp && tagsInUse.value() >= warmupBound) {
             warmedUp = true;
+	    printf("The cache has completely warmed up --------------- \n");
             warmupCycle = curTick();
         }
     }
@@ -200,8 +201,8 @@ LRU::insertBlock(Addr addr, BlkType *blk, int master_id)
     blk->srcMasterId = master_id;
 
     unsigned set = extractSet(addr);
-    //sets[set].moveToHead(blk);
-    sets[set].blks[assoc-1]=blk;
+    sets[set].moveToHead(blk);
+    //sets[set].blks[assoc-1]=blk;
 }
 
 void
