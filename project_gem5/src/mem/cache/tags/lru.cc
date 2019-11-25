@@ -160,7 +160,7 @@ LRU::accessBlock(Addr addr, int &lat, int master_id)
     lat=hitLatency+1;
 	for (int i = 0; i < num_victim_sets; ++i) {
 		if ((victim_cache[0].blks[i]->tag == tag) && (victim_cache[0].blks[i]->set == set) && (((victim_cache[0].blks[i]->isValid()==1)))){
-		printf("Found in victim cache \n");
+		//printf("Found in victim cache \n");
 		blk = victim_cache[0].blks[i];
 		victim_cache[0].blks[i] = sets[set].blks[assoc-1];
 		//printf("associativity of victim cache is %d \n",victim_cache[0].assoc);

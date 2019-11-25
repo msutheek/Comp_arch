@@ -139,7 +139,7 @@ leslie3d.output='leslie3d.stdout'
 namd = LiveProcess()
 namd_dir='444.namd/'
 namd.executable =  bench_dir+namd_dir+'/exe/namd'
-input=bench_dir+namd_dir+'/data/all/input/namd.input'
+input='/home/min/a/mohan40/project_gem5/namd.input'
 namd.cmd = [namd.executable] + ['--input',input,'--iterations','1','--output','namd.out']
 namd.output='namd.stdout'
 
@@ -163,7 +163,7 @@ dealII.output='log'
 soplex=LiveProcess()
 soplex_dir = '450.soplex/'
 soplex.executable = bench_dir+soplex_dir+'/exe/soplex'
-data=bench_dir+soplex_dir+'/data/ref/input/ref.mps'
+data='/home/min/a/mohan40/project_gem5/ref.mps'
 soplex.cmd = [soplex.executable]+['-m10000',data]
 soplex.output = 'test.out'
 
@@ -185,7 +185,7 @@ calculix.output = 'beampic.log'
 
 #456.hmmer
 hmmer=LiveProcess()
-hmmr_dir = '456.hmmr/'
+hmmr_dir = '456.hmmer/'
 hmmer.executable = bench_dir+hmmr_dir+'/exe/hmmer'
 data=bench_dir+hmmr_dir+'/data/ref/input/nph3.hmm'
 hmmer.cmd = [hmmer.executable]+['--fixed', '0', '--mean', '325', '--num', '5000', '--sd', '200', '--seed', '0', data]
@@ -216,7 +216,7 @@ libquantum.output = 'ref.out'
 #464.h264ref
 h264ref=LiveProcess()
 h264_dir = '464.h264ref/'
-h264ref.executable = bench_dir+h264_dir+'/exe/h264'
+h264ref.executable = bench_dir+h264_dir+'/exe/h264ref'
 data=bench_dir+h264_dir+'/data/ref/input/foreman_ref_encoder_baseline.cfg'
 h264ref.cmd = [h264ref.executable]+['-d',data]
 h264ref.output = 'foreman_ref_encoder_baseline.out'
