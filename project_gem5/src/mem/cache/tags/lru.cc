@@ -63,7 +63,8 @@ LRU::LRU(unsigned _numSets, unsigned _blkSize, unsigned _assoc,
     if (hitLatency <= 0) {
         fatal("access latency must be greater than zero");
     }
-
+    rand_ctr = 0;
+    psel_ctr = 0;
     blkMask = blkSize - 1;
     setShift = floorLog2(blkSize);
     setMask = numSets - 1;
@@ -170,6 +171,12 @@ LRU::insertBlock(Addr addr, BlkType *blk, int master_id)
         if (!warmedUp && tagsInUse.value() >= warmupBound) {
             warmedUp = true;
             warmupCycle = curTick();
+            if (assoc > 2) {
+               printf("L2 cache completely warmed up *********************");
+            }
+            else {
+               printf("L1 cache completely warmed up *********************");
+            }
         }
     }
 
@@ -200,8 +207,45 @@ LRU::insertBlock(Addr addr, BlkType *blk, int master_id)
     blk->srcMasterId = master_id;
 
     unsigned set = extractSet(addr);
-    //sets[set].moveToHead(blk);
-    sets[set].blks[assoc-1]=blk;
+    if (assoc > 2) { 
+       if (set%32 == 0) {
+          sets[set].moveToHead(blk);
+          if (psel_ctr < 1024) {
+             psel_ctr = psel_ctr + 1;
+          }
+       }
+       else if (set%32 == 1) {
+          if (rand_ctr<32) {
+             rand_ctr=rand_ctr+1;
+             sets[set].blks[assoc-1]=blk;
+          }
+          else {
+             rand_ctr=0;
+             sets[set].moveToHead(blk);
+          } 
+          if (psel_ctr > 0) {
+             psel_ctr = psel_ctr - 1;
+          }
+       }
+       else {
+          if (psel_ctr >= 512) {
+             if (rand_ctr<32) {
+                rand_ctr=rand_ctr+1;
+                sets[set].blks[assoc-1]=blk;
+             }
+             else {
+                rand_ctr=0;
+                sets[set].moveToHead(blk);
+             }
+          }
+          else {
+             sets[set].moveToHead(blk);
+          }
+       }
+    }
+    else {
+       sets[set].moveToHead(blk);
+    }
 }
 
 void

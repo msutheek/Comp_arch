@@ -70,6 +70,10 @@ class LRU : public BaseTags
     /** The hit latency. */
     const unsigned hitLatency;
 
+    unsigned int rand_ctr;
+    
+    unsigned int psel_ctr;
+
     /** The cache sets. */
     CacheSet *sets;
 
